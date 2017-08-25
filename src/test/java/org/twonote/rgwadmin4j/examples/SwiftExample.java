@@ -16,15 +16,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-
-/**
- * Created by petertc on 3/31/17.
- */
+/** Created by petertc on 3/31/17. */
 public class SwiftExample {
     private static String username;
     private static String password;
     private static String authUrl;
-    private static final String userId = "rgwAdmin4jTest-" + UUID.randomUUID().toString();
+    private static final String userId = "rgwAdmin4jTest" ;
+  private static final String fileName = "foo.txt";
     private static RgwAdmin RGW_ADMIN_CLIENT;
     private static String adminUserName;
     private static String adminPassword;
@@ -46,11 +44,13 @@ public class SwiftExample {
 
         // Create a Container
         Container container = suzhou.getContainer("my-new-container11");
-        container.create();
+	    if (!container.exists()) {
+		    container.create();
+	    }
 
         // Create an Object
-        StoredObject object = container.getObject("foo.txt");
-        object.uploadObject(new File("src/test/resources/foo.txt"));
+        StoredObject object = container.getObject(fileName);
+        object.uploadObject(new File("src/test/resources/"+fileName));
 
         // Add/Update Object Metadata
         Map<String, Object> metadata = new TreeMap<String, Object>();
@@ -76,7 +76,7 @@ public class SwiftExample {
         }
 
         // Retrieve an Object
-        object.downloadObject(new File("/tmp/outfile.txt"));
+        object.downloadObject(new File("/tmp/"+fileName));
 
         // Delete an Object
         object.delete();
@@ -105,7 +105,8 @@ public class SwiftExample {
 
 
         String subUserId = UUID.randomUUID().toString();
-        RGW_ADMIN_CLIENT.createSubUser(response.getUserId(), subUserId, SubUser.Permission.FULL, CredentialType.SWIFT);
+        RGW_ADMIN_CLIENT.createSubUser(
+        response.getUserId(), subUserId, SubUser.Permission.FULL, CredentialType.SWIFT);
 
         User response2 = RGW_ADMIN_CLIENT.getUserInfo(response.getUserId()).get();
         username = response2.getSwiftCredentials().get(0).getUsername();
@@ -118,14 +119,15 @@ public class SwiftExample {
         adminPassword = response3.getSwiftCredentials().get(0).getPassword();
     }
 
-    public static void main(String[] args) throws IOException {
-        init();
-        try {
-            example();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            RGW_ADMIN_CLIENT.removeUser(userId);
-        }
-    }
+  public static void main(String[] args) throws IOException {
+    long start=System.currentTimeMillis();init();
+    try {
+      example();
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      RGW_ADMIN_CLIENT.removeUser(userId);
+    System.out.println((System.currentTimeMillis()-start)/1000+"s");
+
+}  }
 }
