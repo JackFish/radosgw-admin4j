@@ -14,6 +14,7 @@ import org.twonote.rgwadmin4j.model.User;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /** Created by petertc on 3/31/17. */
@@ -27,7 +28,7 @@ public class SwiftExample {
   private static String adminUserName;
   private static String adminPassword;
 
-  private static void example() {
+  private static void example() throws IOException {
     // Create a Connection
     AccountConfig config = new AccountConfig();
     config.setUsername(username);
@@ -50,7 +51,9 @@ public class SwiftExample {
 
     // Create an Object
     StoredObject object = container.getObject(fileName);
-    object.uploadObject(new File("src/test/resources/" + fileName));
+    try (InputStream is = SwiftExample.class.getResourceAsStream("/" + fileName); ) {
+      object.uploadObject(is);
+    }
 
     // Add/Update Object Metadata
     Map<String, Object> metadata = new TreeMap<String, Object>();
